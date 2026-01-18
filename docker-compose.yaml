@@ -27,6 +27,12 @@ services:
       - TZ=Asia/Dhaka
       - GENERIC_TIMEZONE=Asia/Dhaka
       - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      # ✅ Allow Node.js built-in modules
+      - NODE_FUNCTION_ALLOW_BUILTIN=fs,crypto,path,os
+
+      # ✅ Enable disabled nodes
+      - NODES_EXCLUDE=[]
+
     volumes:
       - n8n_storage:/home/node/.n8n
       - n8n_binaries:/home/node/.n8n/binary_data
