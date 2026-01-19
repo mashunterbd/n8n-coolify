@@ -1,13 +1,40 @@
-🌐 Coolify Deploy Steps Recap
+# 🌐 Coolify Deploy Steps Recap
 
-1️⃣ GitHub repo →
-2️⃣ Coolify → New Resource → Public Repository
-3️⃣ Build Pack: Docker Compose
-4️⃣ Build Context: .
-5️⃣ Port: 5678
-6️⃣ Add Domain: e.g. n8n.yourdomain.com
-7️⃣ Deploy 🚀
+## Deployment Steps:
 
+1. **GitHub Repository Preparation**
+   - Ensure your n8n project is on GitHub
+
+2. **Coolify Configuration**
+   - Go to Coolify dashboard
+   - Click "New Resource"
+   - Select "Public Repository"
+
+3. **Build Settings**
+   - **Build Pack:** Docker Compose
+   - **Build Context:** `.` (dot for current directory)
+   - **Port:** `5678` (default n8n port)
+
+4. **Domain Configuration**
+   - Add custom domain (e.g., `n8n.yourdomain.com`)
+   - Configure DNS records as needed
+
+5. **Deployment**
+   - Review all settings
+   - Click "Deploy" 🚀
+
+## Quick Reference:
+```yaml
+Steps:
+  - GitHub Repo
+  - Coolify → New Resource → Public Repository
+  - Build Pack: Docker Compose
+  - Build Context: .
+  - Port: 5678
+  - Domain: n8n.yourdomain.com
+  - Deploy 🚀
+
+```
 ## 💡 What happens now
 
 When you build with this configuration:
