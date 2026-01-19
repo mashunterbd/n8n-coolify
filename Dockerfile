@@ -3,7 +3,11 @@ FROM n8nio/n8n:latest
 
 USER root
 
-# Download and install static apk-tools (no dependencies needed)
+# Step 1: Install minimal tools to fetch apk-tools
+RUN apt-get update && apt-get install -y wget ca-certificates tar xz-utils && \
+    update-ca-certificates
+
+# Step 2: Download and install static apk-tools
 RUN wget -q https://dl-cdn.alpinelinux.org/alpine/v3.23/main/x86_64/apk-tools-static-2.14.8-r0.apk && \
     tar -xzf apk-tools-static-2.14.8-r0.apk && \
     ./sbin/apk.static -X https://dl-cdn.alpinelinux.org/alpine/v3.23/main \
