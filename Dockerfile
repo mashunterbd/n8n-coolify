@@ -1,18 +1,26 @@
-# Base n8n image
+# Stage 1: Alpine tools provider
+FROM alpine:3.19 AS alpine-tools
+
+# Install wget, apk-tools, and tar inside this stage
+RUN apk add --no-cache wget tar xz
+
+# Stage 2: Main n8n image
 FROM n8nio/n8n:latest
 
 USER root
 
-# Step 1: Install minimal tools to fetch apk-tools
-RUN apt-get update && apt-get install -y wget ca-certificates tar xz-utils && \
-    update-ca-certificates
+# Copy apk binary and required libraries from alpine stage
+COPY --from=alpine-tools /sbin/apk /sbin/apk
+COPY --from=alpine-tools /lib/ld-musl-x86_64.so.1 /lib/
+COPY --from=alpine-tools /usr/lib/libapk.so* /usr/lib/
+COPY --from=alpine-tools /bin/wget /bin/wget
+COPY --from=alpine-tools /bin/tar /bin/tar
+COPY --from=alpine-tools /bin/xz /bin/xz
 
-# Step 2: Download and install static apk-tools
-RUN wget -q https://dl-cdn.alpinelinux.org/alpine/v3.23/main/x86_64/apk-tools-static-2.14.8-r0.apk && \
-    tar -xzf apk-tools-static-2.14.8-r0.apk && \
-    ./sbin/apk.static -X https://dl-cdn.alpinelinux.org/alpine/v3.23/main \
-        -U --allow-untrusted add apk-tools && \
-    rm -rf sbin apk-tools-static-2.14.8-r0.apk && \
+# Add repositories and install your packages
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.19/main" > /etc/apk/repositories && \
+    echo "https://dl-cdn.alpinelinux.org/alpine/v3.19/community" >> /etc/apk/repositories && \
+    chmod +x /sbin/apk && \
     ln -sf /sbin/apk /usr/local/bin/apk && \
     apk update && apk add --no-cache poppler-utils ffmpeg ghostscript curl && \
     mkdir -p /shared/tmp /shared/pdf && chmod -R 777 /shared
