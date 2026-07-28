@@ -1,26 +1,27 @@
 # Stage 1: Build helper using Alpine
 FROM alpine:3.19 AS alpine-builder
-RUN apk add --no-cache poppler-utils ffmpeg ghostscript curl
+
+# ✅ poppler + puppeteer/chromium এর সব প্যাকেজ একসাথে এখানেই ইন্সটল (apk শুধু এখানেই কাজ করে)
+RUN apk add --no-cache \
+    poppler-utils ffmpeg ghostscript curl \
+    chromium nss glib freetype freetype-dev harfbuzz \
+    ca-certificates ttf-freefont udev ttf-liberation font-noto-emoji
 
 # Stage 2: Main n8n image
 FROM n8nio/n8n:latest
 USER root
 
+# ✅ এখন Stage 1 থেকে chromium সহ সবকিছু কপি হয়ে যাবে (কোনো apk লাগবে না)
 COPY --from=alpine-builder /usr/bin /usr/bin
 COPY --from=alpine-builder /usr/lib /usr/lib
 COPY --from=alpine-builder /lib /lib
 COPY --from=alpine-builder /usr/share /usr/share
 
-# ✅ Puppeteer/Chromium এর জন্য দরকারি সব প্যাকেজ (verified against n8n-nodes-puppeteer official Dockerfile)
-RUN apk add --no-cache \
-    chromium nss glib freetype freetype-dev harfbuzz \
-    ca-certificates ttf-freefont udev ttf-liberation font-noto-emoji
-
-# ✅ Puppeteer কে বলা হচ্ছে নিজে Chrome ডাউনলোড না করে Alpine chromium ব্যবহার করতে
+# ✅ Puppeteer কে বলা হচ্ছে নিজে Chrome ডাউনলোড না করে কপি হওয়া chromium ব্যবহার করতে
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
-# ✅ node-html-to-image গ্লোবালি ইন্সটল (n8n base image এর NODE_PATH এটা অটো ডিটেক্ট করবে)
+# ✅ npm install -g এখানে ঠিক আছে — এটা apk-এর উপর নির্ভর করে না, npm ইমেজে আগে থেকেই আছে
 RUN npm install -g node-html-to-image
 
 RUN mkdir -p /shared/tmp /shared/pdf && chmod -R 777 /shared
