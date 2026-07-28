@@ -26,8 +26,9 @@ services:
       - GENERIC_TIMEZONE=Asia/Dhaka
       # - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
       # ✅ Allow Node.js built-in modules
-      - NODE_FUNCTION_ALLOW_BUILTIN=fs,crypto,path,os
+      - NODE_FUNCTION_ALLOW_BUILTIN=fs,crypto,path,os,child_process,buffer,stream,util
       - NODE_FUNCTION_ALLOW_EXTERNAL=node-html-to-image
+      - N8N_RUNNERS_INSECURE_MODE=true
 
       # ✅ Enable disabled nodes
       - NODES_EXCLUDE=[]
