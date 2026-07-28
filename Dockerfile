@@ -1,6 +1,5 @@
 # Stage 1: Build helper using Alpine
 FROM alpine:3.19 AS alpine-builder
-
 # ✅ poppler + puppeteer/chromium এর সব প্যাকেজ একসাথে এখানেই ইন্সটল (apk শুধু এখানেই কাজ করে)
 RUN apk add --no-cache \
     poppler-utils ffmpeg ghostscript curl \
@@ -23,6 +22,14 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
 
 # ✅ npm install -g এখানে ঠিক আছে — এটা apk-এর উপর নির্ভর করে না, npm ইমেজে আগে থেকেই আছে
 RUN npm install -g node-html-to-image
+
+# ✅ Puppeteer community node + its extra plugins (this is the actual fix for your error)
+RUN npm install -g \
+    n8n-nodes-puppeteer \
+    puppeteer-core \
+    puppeteer-extra \
+    puppeteer-extra-plugin-user-data-dir \
+    puppeteer-extra-plugin-stealth
 
 RUN mkdir -p /shared/tmp /shared/pdf && chmod -R 777 /shared
 
