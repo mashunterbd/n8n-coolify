@@ -17,8 +17,10 @@ COPY --from=alpine-builder /lib /lib
 COPY --from=alpine-builder /usr/share /usr/share
 
 # ✅ Puppeteer কে বলা হচ্ছে নিজে Chrome ডাউনলোড না করে কপি হওয়া chromium ব্যবহার করতে
+# ✅ NODE_PATH যোগ করা হলো যাতে global npm module গুলো n8n-nodes-puppeteer থেকেও খুঁজে পাওয়া যায়
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser \
+    NODE_PATH=/usr/local/lib/node_modules
 
 # ✅ npm install -g এখানে ঠিক আছে — এটা apk-এর উপর নির্ভর করে না, npm ইমেজে আগে থেকেই আছে
 RUN npm install -g node-html-to-image
