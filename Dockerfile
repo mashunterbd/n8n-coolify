@@ -5,7 +5,13 @@ FROM alpine:3.19 AS alpine-builder
 RUN apk add --no-cache \
     poppler-utils ffmpeg ghostscript curl \
     chromium nss glib freetype freetype-dev harfbuzz \
-    ca-certificates ttf-freefont udev ttf-liberation font-noto-emoji
+    ca-certificates ttf-freefont udev ttf-liberation font-noto-emoji \
+    python3 py3-pip
+
+# Install yt-dlp via pip here (musl-native build), since n8nio/n8n is also
+# Alpine-based — the prebuilt yt-dlp_linux binary from GitHub is built against
+# glibc and will not run on musl libc (Alpine)
+RUN pip install --no-cache-dir --break-system-packages yt-dlp
 
 # Stage 2: Main n8n image
 FROM n8nio/n8n:latest
@@ -34,13 +40,9 @@ RUN npm install -g \
     puppeteer-extra-plugin-user-data-dir \
     puppeteer-extra-plugin-stealth
 
-# Install yt-dlp (standalone binary, no python dependency needed)
-RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp \
-    && chmod +x /usr/local/bin/yt-dlp
-
 RUN mkdir -p /shared/tmp /shared/pdf && chmod -R 777 /shared
 
-# Verify poppler-utils binaries were copied correctly (fails the build if missing)
-RUN pdftoppm -v && pdftotext -v && pdfinfo -v
+# Verify poppler-utils and yt-dlp were copied over correctly (fails the build if missing)
+RUN pdftoppm -v && pdftotext -v && pdfinfo -v && yt-dlp --version
 
 USER node
