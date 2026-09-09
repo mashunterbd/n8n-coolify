@@ -1,6 +1,7 @@
 # Stage 1: Build helper using Alpine
 FROM alpine:3.19 AS alpine-builder
-# ✅ poppler + puppeteer/chromium এর সব প্যাকেজ একসাথে এখানেই ইন্সটল (apk শুধু এখানেই কাজ করে)
+# Install poppler + all puppeteer/chromium related packages here together
+# (apk only works in this stage)
 RUN apk add --no-cache \
     poppler-utils ffmpeg ghostscript curl \
     chromium nss glib freetype freetype-dev harfbuzz \
@@ -10,28 +11,32 @@ RUN apk add --no-cache \
 FROM n8nio/n8n:latest
 USER root
 
-# ✅ এখন Stage 1 থেকে chromium সহ সবকিছু কপি হয়ে যাবে (কোনো apk লাগবে না)
+# Copy chromium and everything else from Stage 1 (no apk needed here)
 COPY --from=alpine-builder /usr/bin /usr/bin
 COPY --from=alpine-builder /usr/lib /usr/lib
 COPY --from=alpine-builder /lib /lib
 COPY --from=alpine-builder /usr/share /usr/share
 
-# ✅ Puppeteer কে বলা হচ্ছে নিজে Chrome ডাউনলোড না করে কপি হওয়া chromium ব্যবহার করতে
-# ✅ NODE_PATH যোগ করা হলো যাতে global npm module গুলো n8n-nodes-puppeteer থেকেও খুঁজে পাওয়া যায়
+# Tell Puppeteer not to download its own Chrome, and use the copied chromium instead
+# NODE_PATH is added so global npm modules can be found by n8n-nodes-puppeteer too
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser \
     NODE_PATH=/usr/local/lib/node_modules
 
-# ✅ npm install -g এখানে ঠিক আছে — এটা apk-এর উপর নির্ভর করে না, npm ইমেজে আগে থেকেই আছে
+# npm install -g is fine here — it does not depend on apk, npm is already in the base image
 RUN npm install -g node-html-to-image
 
-# ✅ Puppeteer community node + its extra plugins (this is the actual fix for your error)
+# Puppeteer community node + its extra plugins (this is the actual fix for your error)
 RUN npm install -g \
     n8n-nodes-puppeteer \
     puppeteer-core \
     puppeteer-extra \
     puppeteer-extra-plugin-user-data-dir \
     puppeteer-extra-plugin-stealth
+
+# Install yt-dlp (standalone binary, no python dependency needed)
+RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp \
+    && chmod +x /usr/local/bin/yt-dlp
 
 RUN mkdir -p /shared/tmp /shared/pdf && chmod -R 777 /shared
 
