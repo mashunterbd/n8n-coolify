@@ -26,9 +26,9 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
 # npm install -g is fine here — it does not depend on apk, npm is already in the base image
 RUN npm install -g node-html-to-image
 
-# Puppeteer community node + its extra plugins (this is the actual fix for your error)
+# Puppeteer extra plugins (n8n-nodes-puppeteer is installed separately
+# via n8n's Community Nodes UI, not here in the Dockerfile)
 RUN npm install -g \
-    n8n-nodes-puppeteer \
     puppeteer-core \
     puppeteer-extra \
     puppeteer-extra-plugin-user-data-dir \
@@ -39,5 +39,8 @@ RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o 
     && chmod +x /usr/local/bin/yt-dlp
 
 RUN mkdir -p /shared/tmp /shared/pdf && chmod -R 777 /shared
+
+# Verify poppler-utils binaries were copied correctly (fails the build if missing)
+RUN pdftoppm -v && pdftotext -v && pdfinfo -v
 
 USER node
